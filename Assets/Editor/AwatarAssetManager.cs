@@ -133,7 +133,6 @@ public class AwatarAssetManager
         return true;
     }
 
-
     public static GameObject GenerateRole(string roleName, string avatarName)
     {
         string basePath = RoleBasePath + roleName + ".prefab";
@@ -294,5 +293,4 @@ public class AwatarAssetManager
         }
         return l;
     }
-
 }

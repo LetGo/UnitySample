@@ -122,16 +122,43 @@ public class AwatarEditor : EditorWindow
                 EditorUtility.DisplayDialog("错误", "当前没有模型", "Ok");
             }
         }
-
+        EditorGUILayout.Separator();
+        if (GUILayout.Button("一键分解生成"))
+        {
+            ShowProgressBar("正在生成材质",1 / 4.0f);
+            if (AwatarAssetManager.GenerateMaterials(playerModel))
+            {
+                ShowProgressBar("正在分解动作", 2 / 4.0f);
+                if (AwatarAssetManager.SplitAnimations(playerModel))
+                {
+                    ShowProgressBar("正在创建模型基本组件", 3 / 4.0f);
+                    if (AwatarAssetManager.GenerateRoleBaseAsset(playerModel))
+                    {
+                        ShowProgressBar("正在创建模型蒙皮", 4 / 4.0f);
+                        if (AwatarAssetManager.GenerateRoleSkinAsset(playerModel))
+                        {
+                            EditorUtility.ClearProgressBar();
+                            EditorUtility.DisplayDialog("模型分解", "一键分解生成 OKK.", "Ok");
+                        }
+                    }
+                }
+            } 
+        }
         EditorGUILayout.Separator();
         if (GUILayout.Button("测试生成"))
         {
-            if (playerModel != null)
+            if (playerModelClone != null)
             {
-                GameObject.DestroyImmediate(playerModel);
+                Object.DestroyImmediate(playerModelClone);
             }
-            playerModel = AwatarAssetManager.GenerateRole("ZhanShi", "ZhanShi05");
+            playerModelClone = AwatarAssetManager.GenerateRole("ZhanShi", "ZhanShi05");
+            playerModelClone.name = "ZhanShi";
         }
+    }
+
+    void ShowProgressBar(string info, float progress)
+    {
+        EditorUtility.DisplayProgressBar("正在分解...",info,progress);
     }
 
     void OnDestroy()
