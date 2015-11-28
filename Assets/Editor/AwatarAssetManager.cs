@@ -70,7 +70,7 @@ public class AwatarAssetManager
 
         foreach (var item in animationClips)
         {
-            var clipName = animPath + item.name.Replace("(Clone)","");
+            var clipName = animPath + item.name;
             string clipPath = clipName + ".anim";
 
             AssetDatabase.CreateAsset(item, clipPath);
@@ -125,7 +125,6 @@ public class AwatarAssetManager
                     smrHolder.Mats.Add(m);
                 }
             }
-            //字符串列表，记录子蒙皮模型对应的骨骼名称清单。
             foreach (Transform t in smr.bones)
                 smrHolder.Bones.Add(t.name);
 

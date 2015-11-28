@@ -60,6 +60,10 @@ public class AwatarEditor : EditorWindow
                     EditorUtility.DisplayDialog("Character Generator", "创建材质失败", "Ok");
                 }
             }
+            else
+            {
+                EditorUtility.DisplayDialog("错误", "当前没有模型", "Ok");
+            }
         }
         EditorGUILayout.Separator();
         if (GUILayout.Button("2-分解动作"))
@@ -74,6 +78,10 @@ public class AwatarEditor : EditorWindow
                 {
                     EditorUtility.DisplayDialog("Character Generator", "分解动作失败", "Ok");
                 }
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("错误", "当前没有模型", "Ok");
             }
         }
         EditorGUILayout.Separator();
@@ -90,6 +98,10 @@ public class AwatarEditor : EditorWindow
                     EditorUtility.DisplayDialog("Character Generator", "创建模型基本组件失败", "Ok");
                 }
             }
+            else
+            {
+                EditorUtility.DisplayDialog("错误", "当前没有模型", "Ok");
+            }
         }
         EditorGUILayout.Separator();
         if (GUILayout.Button("4-创建模型蒙皮"))
@@ -104,6 +116,10 @@ public class AwatarEditor : EditorWindow
                 {
                     EditorUtility.DisplayDialog("Character Generator", "创建模型蒙皮失败", "Ok");
                 }
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("错误", "当前没有模型", "Ok");
             }
         }
 
