@@ -39,7 +39,7 @@ public class AwatarAssetManager
 
                 string matSavePath = matPath + smr.name.ToLower() + ".mat";
 
-                Material m = new Material(Shader.Find(""));
+                Material m = new Material(Shader.Find("Transparent/Diffuse"));
                 m.SetColor("_COlor", new Color(0.6f, 0.6f, 0.6f));
                 m.SetTexture("_MainTex", t);
 
@@ -96,16 +96,134 @@ public class AwatarAssetManager
             var mes = modelClone.GetComponentsInChildren<SkinnedMeshRenderer>();
             foreach (var item in mes)
             {
-                Object.DestroyImmediate(item);
+                Object.DestroyImmediate(item.gameObject);
             }
             CreatePrefab(modelClone, basePath + plaerModel.name + ".prefab");
         }
         return true;
     }
 
+    public static bool GenerateRoleSkinAsset(GameObject plaerModel)
+    {
+        string roleSkin = SkinPath + plaerModel.name +"/";
+        CheckCreateDir(roleSkin);
+        DeleteSpecFiles(roleSkin,"");
+        List<Material> materials = CollectAll<Material>(MaterialPath + plaerModel.name);
+
+        foreach (var smr in plaerModel.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            SkinMeshRenderHolder smrHolder = ScriptableObject.CreateInstance<SkinMeshRenderHolder>();
+            smrHolder.Mats = new List<Material>();
+            smrHolder.Bones = new List<string>();
+
+            smrHolder.sharedMesh = smr.sharedMesh;
+
+            foreach (Material m in materials)
+            {
+                if (m.name.Contains(smr.name.ToLower()))
+                {
+                    smrHolder.Mats.Add(m);
+                }
+            }
+            //字符串列表，记录子蒙皮模型对应的骨骼名称清单。
+            foreach (Transform t in smr.bones)
+                smrHolder.Bones.Add(t.name);
+
+            AssetDatabase.CreateAsset(smrHolder, roleSkin + smr.name + ".asset");
+        }
+        return true;
+    }
+
+
+    public static GameObject GenerateRole(string roleName, string avatarName)
+    {
+        string basePath = RoleBasePath + roleName + ".prefab";
+        var avatarPath = SkinPath + roleName + "/" + avatarName + ".asset";
+
+        var basePrefab = AssetDatabase.LoadAssetAtPath(basePath, typeof(GameObject)) as GameObject;
+        if (basePrefab != null)
+        {
+            var avatar = AssetDatabase.LoadAssetAtPath(avatarPath, typeof(SkinMeshRenderHolder)) as SkinMeshRenderHolder;
+            if (avatar != null)
+            {
+                GameObject baseClone = GameObject.Instantiate(basePrefab) as GameObject;
+
+                List<CombineInstance> combineInstances = new List<CombineInstance>();
+                List<Transform> bones = new List<Transform>();
+                Transform[] transforms = baseClone.GetComponentsInChildren<Transform>();
+
+                for (int sub = 0; sub < avatar.sharedMesh.subMeshCount; sub++)
+                {
+                    CombineInstance ci = new CombineInstance();
+                    ci.mesh = avatar.sharedMesh;
+                    ci.subMeshIndex = sub;
+                    combineInstances.Add(ci);
+                }
+
+                foreach (string bone in avatar.Bones)
+                {
+                    foreach (Transform transform in transforms)
+                    {
+                        if (transform.name != bone) continue;
+                        bones.Add(transform);
+                        break;
+                    }
+                }
+
+                SkinnedMeshRenderer r = baseClone.GetComponent<SkinnedMeshRenderer>();
+                if (r == null) r = baseClone.AddComponent<SkinnedMeshRenderer>();
+                r.sharedMesh = new Mesh();
+                r.sharedMesh.CombineMeshes(combineInstances.ToArray(), false, false);
+                r.bones = bones.ToArray();
+                r.materials = avatar.Mats.ToArray();
+
+                AttachAnimation(baseClone, roleName, "run", "run", "idle", "atkIdle");
+
+                return baseClone;
+            }
+        }
+        return null;
+    }
+
+    private static void AttachAnimation(GameObject root, string roleName, string defaultAnim, params string[] anims)
+    {
+        Animation anim = root.GetComponent<Animation>();
+        if (anim == null)
+        {
+            anim = root.AddComponent<Animation>();
+        }
+        else
+        {
+            List<string> stateName = new List<string>();
+            foreach (AnimationState state in anim)
+            {
+                stateName.Add(state.name);
+            }
+            foreach (string clip in stateName)
+            {
+                anim.RemoveClip(clip);
+            }
+        }
+
+        foreach (var s in anims)
+        {
+            string aniPath = "Players/Animations/" + roleName + "/" + s;
+            var aniClip = Resources.Load(aniPath) as AnimationClip;
+            if (aniClip != null)
+            {
+                root.animation.AddClip(aniClip, s);
+            }
+            else
+            {
+                Debug.LogError("load anim failed path :" + aniPath);
+            }
+        }
+        root.animation.CrossFade(defaultAnim);
+    }
+
     static Object CreatePrefab(GameObject go, string path) 
     {
-        Object prefab = PrefabUtility.CreatePrefab(path,go);
+        Object prefab = PrefabUtility.CreatePrefab(path, go, ReplacePrefabOptions.ReplaceNameBased);
         Object.DestroyImmediate(go);
         return prefab;
     }
@@ -177,4 +295,5 @@ public class AwatarAssetManager
         }
         return l;
     }
+
 }
