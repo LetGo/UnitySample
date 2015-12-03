@@ -175,7 +175,7 @@ public class AwatarAssetManager
                 r.bones = bones.ToArray();
                 r.materials = avatar.Mats.ToArray();
 
-                AttachAnimation(baseClone, roleName, "run", "run", "idle", "atkIdle");
+                AttachAnimation(baseClone,false, roleName, "run", "run", "idle", "atkIdle");
 
                 return baseClone;
             }
@@ -183,7 +183,7 @@ public class AwatarAssetManager
         return null;
     }
 
-    private static void AttachAnimation(GameObject root, string roleName, string defaultAnim, params string[] anims)
+    private static void AttachAnimation(GameObject root, bool frombundle,string roleName, string defaultAnim, params string[] anims)
     {
         Animation anim = root.GetComponent<Animation>();
         if (anim == null)
@@ -203,19 +203,41 @@ public class AwatarAssetManager
             }
         }
 
-        foreach (var s in anims)
+        if (!frombundle)
         {
-            string aniPath = "Players/Animations/" + roleName + "/" + s;
-            var aniClip = Resources.Load(aniPath) as AnimationClip;
-            if (aniClip != null)
+            foreach (var s in anims)
             {
-                root.animation.AddClip(aniClip, s);
-            }
-            else
-            {
-                Debug.LogError("load anim failed path :" + aniPath);
+                string aniPath = "Players/Animations/" + roleName + "/" + s;
+                var aniClip = Resources.Load(aniPath) as AnimationClip;
+                if (aniClip != null)
+                {
+                    root.animation.AddClip(aniClip, s);
+                }
+                else
+                {
+                    Debug.LogError("load anim failed path :" + aniPath);
+                }
             }
         }
+        else
+        {
+            string roleBaseBundelPath = Application.dataPath + AnimationPath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
+            AssetBundle ab = AssetBundle.CreateFromFile(roleBaseBundelPath + "ZhanShi.unity3d");
+            foreach (var s in anims)
+            {
+                var aniClip = ab.Load(s) as AnimationClip;
+                if (aniClip != null)
+                {
+                    root.animation.AddClip(aniClip, s);
+                }
+                else
+                {
+                    Debug.LogError("load anim failed path :" + s);
+                }
+            }
+            ab.Unload(false);
+        }
+        root.animation.wrapMode = WrapMode.Loop;
         root.animation.CrossFade(defaultAnim);
     }
 
@@ -292,5 +314,100 @@ public class AwatarAssetManager
             l.Add(asset);
         }
         return l;
+    }
+
+    public static bool GenerateRoleBundle()
+    {
+        string roleBaseBundelPath = Application.dataPath + RoleBasePath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
+
+        CheckCreateDir(roleBaseBundelPath);
+
+        BuildAssetBundleOptions option = BuildAssetBundleOptions.CollectDependencies | BuildAssetBundleOptions.UncompressedAssetBundle;
+
+        List<GameObject> models = CollectAll<GameObject>(RoleBasePath);
+
+        for (int i = 0; i < models.Count; ++i )
+        {
+            string path = roleBaseBundelPath + models[i].name +".unity3d";
+            BuildPipeline.BuildAssetBundle(models[i], null, path, option);
+        }
+
+        roleBaseBundelPath = Application.dataPath + SkinPath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
+        
+        CheckCreateDir(roleBaseBundelPath);
+        List<SkinMeshRenderHolder> meshs = CollectAll<SkinMeshRenderHolder>(SkinPath + "ZhanShi/");
+
+        for (int i = 0; i < meshs.Count; ++i)
+        {
+            string path = roleBaseBundelPath + meshs[i].name + ".unity3d";
+            BuildPipeline.BuildAssetBundle(meshs[i], null, path, option);
+        }
+
+        roleBaseBundelPath = Application.dataPath + AnimationPath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
+
+        CheckCreateDir(roleBaseBundelPath);
+        List<AnimationClip> anims = CollectAll<AnimationClip>(AnimationPath + "ZhanShi/");
+        Object mainasset = AssetDatabase.LoadMainAssetAtPath(AnimationPath + "ZhanShi/");
+
+        BuildPipeline.BuildAssetBundle(mainasset, anims.ToArray(), roleBaseBundelPath + "ZhanShi" + ".unity3d", option);
+        AssetDatabase.Refresh();
+
+        return true;
+    }
+
+    /// <summary>
+    /// 运行游戏再调用
+    /// </summary>
+    /// <returns></returns>
+    public static GameObject GenerateRoleByBundle()
+    {
+        GameObject model = null;
+        string roleBaseBundelPath = Application.dataPath + RoleBasePath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
+        AssetBundle ab = AssetBundle.CreateFromFile(roleBaseBundelPath + "ZhanShi.unity3d");
+
+        model = GameObject.Instantiate(ab.mainAsset) as GameObject;
+        ab.Unload(false);
+
+        roleBaseBundelPath = Application.dataPath + SkinPath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
+        ab = AssetBundle.CreateFromFile(roleBaseBundelPath + "ZhanShi01.unity3d");
+
+        var avatar = ab.mainAsset as SkinMeshRenderHolder;
+
+        if (avatar != null)
+        {
+            GameObject baseClone = model;
+
+            List<CombineInstance> combineInstances = new List<CombineInstance>();
+            List<Transform> bones = new List<Transform>();
+            Transform[] transforms = baseClone.GetComponentsInChildren<Transform>();
+
+            for (int sub = 0; sub < avatar.sharedMesh.subMeshCount; sub++)
+            {
+                CombineInstance ci = new CombineInstance();
+                ci.mesh = avatar.sharedMesh;
+                ci.subMeshIndex = sub;
+                combineInstances.Add(ci);
+            }
+
+            foreach (string bone in avatar.Bones)
+            {
+                foreach (Transform transform in transforms)
+                {
+                    if (transform.name != bone) continue;
+                    bones.Add(transform);
+                    break;
+                }
+            }
+
+            SkinnedMeshRenderer r = baseClone.GetComponent<SkinnedMeshRenderer>();
+            if (r == null) r = baseClone.AddComponent<SkinnedMeshRenderer>();
+            r.sharedMesh = new Mesh();
+            r.sharedMesh.CombineMeshes(combineInstances.ToArray(), false, false);
+            r.bones = bones.ToArray();
+            r.materials = avatar.Mats.ToArray();
+            ab.Unload(false);
+            AttachAnimation(baseClone,true, "ZhanShi", "run", "run", "idle", "atkIdle");
+        }
+        return model;
     }
 }

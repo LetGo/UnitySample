@@ -154,6 +154,18 @@ public class AwatarEditor : EditorWindow
             playerModelClone = AwatarAssetManager.GenerateRole("ZhanShi", "ZhanShi05");
             playerModelClone.name = "ZhanShi";
         }
+
+        EditorGUILayout.Separator();
+        if (GUILayout.Button("生成Bundle"))
+        {
+            AwatarAssetManager.GenerateRoleBundle();
+        }
+
+        EditorGUILayout.Separator();
+        if (GUILayout.Button("先运行游戏再测试Bundle生成模型"))
+        {
+            AwatarAssetManager.GenerateRoleByBundle();
+        }
     }
 
     void ShowProgressBar(string info, float progress)
