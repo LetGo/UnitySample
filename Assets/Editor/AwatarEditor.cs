@@ -20,8 +20,19 @@ public class AwatarEditor : EditorWindow
         return !model.name.Contains("@");
     }
 
+    UnityEngine.Object obj = null;
     void OnGUI()
     {
+        GUILayout.Label("--- 选择对象拖放到下面 ---");
+        obj = EditorGUILayout.ObjectField("Object", obj, typeof(UnityEngine.Object), true);
+        if (GUILayout.Button("获取引用"))
+        {
+            string[] path = AssetDatabase.GetDependencies(new string[] { AssetDatabase.GetAssetPath(obj) });
+            for (int i = 0; i < path.Length; ++i )
+            {
+                Debug.Log(path[i]);
+            }
+        }
         GUILayout.Label("--- 选择模型拖放到下面 ---");
         GUILayout.BeginHorizontal();
         GameObject newModel = EditorGUILayout.ObjectField("FBX", playerModel,typeof(GameObject), true) as GameObject;
