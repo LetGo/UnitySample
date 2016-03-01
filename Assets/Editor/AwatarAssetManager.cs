@@ -211,7 +211,7 @@ public class AwatarAssetManager
                 var aniClip = Resources.Load(aniPath) as AnimationClip;
                 if (aniClip != null)
                 {
-                    root.animation.AddClip(aniClip, s);
+                    root.GetComponent<Animation>().AddClip(aniClip, s);
                 }
                 else
                 {
@@ -222,13 +222,13 @@ public class AwatarAssetManager
         else
         {
             string roleBaseBundelPath = Application.dataPath + AnimationPath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
-            AssetBundle ab = AssetBundle.CreateFromFile(roleBaseBundelPath + "ZhanShi.unity3d");
+            AssetBundle ab = AssetBundle.LoadFromFile(roleBaseBundelPath + "ZhanShi.unity3d");
             foreach (var s in anims)
             {
-                var aniClip = ab.Load(s) as AnimationClip;
+                var aniClip = ab.LoadAsset(s) as AnimationClip;
                 if (aniClip != null)
                 {
-                    root.animation.AddClip(aniClip, s);
+                    root.GetComponent<Animation>().AddClip(aniClip, s);
                 }
                 else
                 {
@@ -237,8 +237,8 @@ public class AwatarAssetManager
             }
             ab.Unload(false);
         }
-        root.animation.wrapMode = WrapMode.Loop;
-        root.animation.CrossFade(defaultAnim);
+        root.GetComponent<Animation>().wrapMode = WrapMode.Loop;
+        root.GetComponent<Animation>().CrossFade(defaultAnim);
     }
 
     static Object CreatePrefab(GameObject go, string path) 
@@ -363,13 +363,13 @@ public class AwatarAssetManager
     {
         GameObject model = null;
         string roleBaseBundelPath = Application.dataPath + RoleBasePath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
-        AssetBundle ab = AssetBundle.CreateFromFile(roleBaseBundelPath + "ZhanShi.unity3d");
+        AssetBundle ab = AssetBundle.LoadFromFile(roleBaseBundelPath + "ZhanShi.unity3d");
 
         model = GameObject.Instantiate(ab.mainAsset) as GameObject;
         ab.Unload(false);
 
         roleBaseBundelPath = Application.dataPath + SkinPath.Replace("Assets/Resources", "/StreamingAssets/Bundle");
-        ab = AssetBundle.CreateFromFile(roleBaseBundelPath + "ZhanShi01.unity3d");
+        ab = AssetBundle.LoadFromFile(roleBaseBundelPath + "ZhanShi01.unity3d");
 
         var avatar = ab.mainAsset as SkinMeshRenderHolder;
 
