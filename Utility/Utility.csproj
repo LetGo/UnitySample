@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E8877165-D669-4229-8DA3-0821D1624326}</ProjectGuid>
+    <ProjectGuid>{34D30DB6-1B1F-42C0-A25E-3D98E201D55F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Engine</RootNamespace>
-    <AssemblyName>Engine</AssemblyName>
+    <RootNamespace>Utility</RootNamespace>
+    <AssemblyName>Utility</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;UNITY</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -37,18 +37,13 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\Engine\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NetWork\BasicThread.cs" />
-    <Compile Include="NetWork\Interface\NetWorkInterface.cs" />
-    <Compile Include="NetWork\NetLink.cs" />
-    <Compile Include="NetWork\NetPackage.cs" />
-    <Compile Include="NetWork\NetWorkDef.cs" />
-    <Compile Include="NetWork\ReceiverThread.cs" />
-    <Compile Include="NetWork\SenderThread.cs" />
-    <Compile Include="NetWork\SwitchList.cs" />
+    <Compile Include="Base\FileUtils.cs" />
+    <Compile Include="Base\NativeMethod.cs" />
+    <Compile Include="Base\Singleton.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
