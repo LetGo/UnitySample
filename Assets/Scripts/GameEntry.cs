@@ -37,8 +37,13 @@ public class GameEntry : MonoBehaviour {
         Debug.Log(Utility.FileUtils.Instance.ReadTextFile("test.txt"));
 
 
+        Utility.FileUtils.Instance.LoadURL("test.txt",OnWWWCallback);
     }
 
+    void OnWWWCallback(WWW www, object param)
+    {
+        Debug.Log("www" + www.text);
+    }
 
 	// Update is called once per frame
 	void Update () 

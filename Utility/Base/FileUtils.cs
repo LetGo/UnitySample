@@ -151,6 +151,7 @@ namespace Utility
             return md5str;
         }
 
+        #region C++读取
         // 读文件 使用相对路径 先尝试外部存储卡，再尝试包内文件 需要外部先设置自定义资源路径
         public string ReadTextFile(string strFileName, int nStartPos = 0, int nSize = 0, int nThreadIndex = 0)
         {
@@ -281,5 +282,40 @@ namespace Utility
 
             return nRet;
         }
+        #endregion C++读取
+
+
+        #region 通过www加载
+        public void LoadURL(string strURL,WWWLoader.WWWCallback callback,object param = null,bool bCache = false)
+        {
+
+            string strPath = FullPathFileName(strURL,Utility.FileUtils.UnityPathType.UnityPath_CustomPath);
+            int nFileSize = NativeMethod.GetFileLength(strPath, 0);
+            if (nFileSize != 0)
+            {
+                strPath = FullUrlFileName(strURL, Utility.FileUtils.UnityPathType.UnityPath_CustomPath);
+            }
+            else
+            {
+                strPath = FullPathFileName(strURL, Utility.FileUtils.UnityPathType.UnityPath_StreamAsset);
+                nFileSize = NativeMethod.GetFileLength(strPath, 0);
+                strPath = FullUrlFileName(strURL, Utility.FileUtils.UnityPathType.UnityPath_StreamAsset);
+            }
+
+            WWWLoader.Instance.LoadURL(strPath,callback,param,bCache);
+
+        }
+
+        public void LoadHttpURL(string strURL, WWWLoader.WWWCallback callback, object param = null, bool bCache = false)
+        {
+            if (!strURL.StartsWith("http://"))
+            {
+                return;
+            }
+
+            WWWLoader.Instance.LoadURL(strURL, callback, param, bCache);
+        }
+
+        #endregion
     }
 }
